@@ -1,4 +1,3 @@
-```javascript
 import Alert from '../models/Alert.js';
 import Notification from '../models/Notification.js';
 import { getIo } from '../server.js';
@@ -26,7 +25,7 @@ export const evaluateNewsAlerts = async (analyzedArticle) => {
 
     for (const alert of activeAlerts) {
       let isTriggered = false;
-      let triggerReason = '';
+      let triggerReason = "";
 
       // --- LOGIC 1: Stock Specific Alert ---
       if (alert.type === 'STOCK_MENTION' && alert.targetTickers && alert.targetTickers.length > 0) {
@@ -40,8 +39,8 @@ export const evaluateNewsAlerts = async (analyzedArticle) => {
 
         if (mentionedPositively || mentionedNegatively) {
           isTriggered = true;
-          const context = mentionedPositively ? 'POSITIVE' : 'NEGATIVE';
-          triggerReason = `Your watched stock(s) were mentioned in a ${context} context regarding: ${analyzedArticle.title}`;
+          const context = mentionedPositively ? "POSITIVE" : "NEGATIVE";
+          triggerReason = "Your watched stock(s) were mentioned in a " + context + " context regarding: " + analyzedArticle.title;
         }
       }
 
@@ -58,7 +57,7 @@ export const evaluateNewsAlerts = async (analyzedArticle) => {
 
           if (articleSeverity >= requiredSeverity) {
             isTriggered = true;
-            triggerReason = `High-importance event detected regarding ${alert.targetTheme}: ${analyzedArticle.title}`;
+            triggerReason = "High-importance event detected regarding " + alert.targetTheme + ": " + analyzedArticle.title;
           }
         }
       }
@@ -69,7 +68,7 @@ export const evaluateNewsAlerts = async (analyzedArticle) => {
         const notification = new Notification({
           userId: alert.userId,
           alertId: alert._id,
-          title: `Alert Triggered: ${alert.name}`,
+          title: "Alert Triggered: " + alert.name,
           message: triggerReason,
           relatedArticleId: analyzedArticle._id,
           type: analyzedArticle.importance || 'MEDIUM', 
@@ -90,6 +89,4 @@ export const evaluateNewsAlerts = async (analyzedArticle) => {
     console.error("[Alert Engine Error]: Failed to evaluate alerts for article:", error.message);
   }
 };
-
-
-```
+      

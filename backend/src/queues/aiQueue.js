@@ -1,4 +1,3 @@
-```javascript
 import { Queue, Worker } from 'bullmq';
 import Redis from 'ioredis';
 import News from '../models/News.js';
@@ -18,18 +17,18 @@ export const aiQueue = new Queue('ai-analysis', { connection });
 const aiWorker = new Worker('ai-analysis', async job => {
   const { articleId } = job.data;
   
-  console.log(`[AI Queue] Starting analysis for article ID: ${articleId}`);
+  console.log("[AI Queue] Starting analysis for article ID: " + articleId);
   
   try {
     // A. Fetch the raw article from DB
     const article = await News.findById(articleId);
     if (!article) {
-      throw new Error(`Article ${articleId} not found in database.`);
+      throw new Error("Article " + articleId + " not found in database.");
     }
     
     // Prevent double-processing
     if (article.isAnalyzed) {
-      console.log(`[AI Queue] Article ${articleId} already analyzed. Skipping.`);
+      console.log("[AI Queue] Article " + articleId + " already analyzed. Skipping.");
       return;
     }
 
@@ -51,7 +50,7 @@ const aiWorker = new Worker('ai-analysis', async job => {
 
     // Save the enriched article to MongoDB
     await article.save();
-    console.log(`[AI Queue] Successfully analyzed & saved article: ${articleId}`);
+    console.log("[AI Queue] Successfully analyzed & saved article: " + articleId);
 
     // D. Trigger Smart Alerts Engine (Feature 8)
     // Checks if this newly analyzed article violates any user's active portfolio/theme rules
@@ -64,7 +63,7 @@ const aiWorker = new Worker('ai-analysis', async job => {
     }
 
   } catch (error) {
-    console.error(`[AI Queue] Job ${job.id} failed for article ${articleId}:`, error.message);
+    console.error("[AI Queue] Job " + job.id + " failed for article " + articleId + ":", error.message);
     throw error; // Throwing the error tells BullMQ to retry the job based on backoff settings
   }
 }, { 
@@ -78,8 +77,6 @@ const aiWorker = new Worker('ai-analysis', async job => {
 
 // Global error listener for the worker
 aiWorker.on('failed', (job, err) => {
-  console.error(`[AI Queue - FATAL] Job ${job?.id} completely failed after retries:`, err);
+  const jobId = job ? job.id : 'unknown';
+  console.error("[AI Queue - FATAL] Job " + jobId + " completely failed after retries:", err);
 });
-
-
-```

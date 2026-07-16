@@ -1,11 +1,9 @@
-```javascript
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 
 // 1. Initialize Gemini API (Requires GEMINI_API_KEY in your .env)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // 2. Define the exact JSON structure we expect the AI to return
-// This guarantees that Gemini will not return markdown or plain text, but a strict JSON object.
 const responseSchema = {
   type: SchemaType.OBJECT,
   properties: {
@@ -58,24 +56,17 @@ const responseSchema = {
 };
 
 // 3. Configure the Gemini Model
-// We use gemini-1.5-flash as it is extremely fast and cost-effective for high-volume text analysis
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash",
   generationConfig: {
-    responseMimeType: "application/json", // Force JSON output
+    responseMimeType: "application/json",
     responseSchema: responseSchema,
-    temperature: 0.1, // Very low temperature for highly analytical, deterministic output
+    temperature: 0.1, 
   }
 });
 
-const SYSTEM_INSTRUCTION = `
-You are a Senior Quantitative Analyst and Indian Stock Market Expert at a top-tier hedge fund.
-Your job is to analyze global and domestic news articles and determine their direct impact on the Indian Stock Market (NSE/BSE).
-Identify specific companies, sectors, and macroeconomic themes.
-Provide a highly logical rationale for your decisions.
-If an event has no impact on Indian markets, set importance to LOW and leave stock arrays empty.
-Always output valid JSON that adheres to the requested schema.
-`;
+// Cleaned up System Instruction without backticks
+const SYSTEM_INSTRUCTION = "You are a Senior Quantitative Analyst and Indian Stock Market Expert at a top-tier hedge fund. Your job is to analyze global and domestic news articles and determine their direct impact on the Indian Stock Market (NSE/BSE). Identify specific companies, sectors, and macroeconomic themes. Provide a highly logical rationale for your decisions. If an event has no impact on Indian markets, set importance to LOW and leave stock arrays empty. Always output valid JSON that adheres to the requested schema.";
 
 /**
  * Takes raw news text and sends it to Gemini for structured analysis.
@@ -85,19 +76,14 @@ Always output valid JSON that adheres to the requested schema.
  */
 export const analyzeNewsArticle = async (title, content) => {
   try {
-    const prompt = `
-      Analyze the following financial news event based on the system instructions.
-      
-      TITLE: ${title}
-      CONTENT: ${content}
-    `;
+    // Cleaned up prompt without backticks
+    const prompt = "Analyze the following financial news event based on the system instructions.\n\nTITLE: " + title + "\nCONTENT: " + content;
 
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       systemInstruction: { role: 'system', parts: [{ text: SYSTEM_INSTRUCTION }] }
     });
 
-    // Extract text and parse it into a Javascript Object
     const responseText = result.response.text();
     const parsedData = JSON.parse(responseText);
     
@@ -107,6 +93,3 @@ export const analyzeNewsArticle = async (title, content) => {
     throw error;
   }
 };
-
-
-```

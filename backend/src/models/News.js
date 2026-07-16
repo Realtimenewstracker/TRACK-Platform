@@ -1,39 +1,31 @@
-```javascript
 import mongoose from 'mongoose';
 
 const newsSchema = new mongoose.Schema({
-  // --- RAW RSS DATA (Populated by Feature 1) ---
+  // --- RAW RSS DATA ---
   title: { type: String, required: true },
   originalUrl: { type: String, required: true, unique: true },
   source: { type: String, required: true },
   publishDate: { type: Date, required: true },
-  rawContent: { type: String }, // Raw fetched text snippet from the RSS feed
+  rawContent: { type: String }, 
   
-  // --- AI ANALYSIS DATA (Populated by Feature 2) ---
+  // --- AI ANALYSIS DATA ---
   isAnalyzed: { type: Boolean, default: false },
   aiSummary: { type: String },
   confidenceScore: { type: Number, min: 0, max: 100 },
   importance: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] },
-  positiveStocks: [{ type: String }], // Array of NSE/BSE tickers
+  positiveStocks: [{ type: String }], 
   negativeStocks: [{ type: String }],
-  affectedSectors: [{ type: String }], // e.g., ["IT", "Banking"]
+  affectedSectors: [{ type: String }], 
   countries: [{ type: String }],
-  themes: [{ type: String }], // e.g., ["Rate Cuts", "War"]
-  reason: { type: String } // AI logical explanation
+  themes: [{ type: String }], 
+  reason: { type: String } 
 }, { 
   timestamps: true 
 });
 
 // --- INDEXES FOR QUERY PERFORMANCE ---
-
-// 1. Chronological sorting for the Live News Feed
 newsSchema.index({ publishDate: -1 });
-
-// 2. Fast deduplication check during continuous RSS ingestion
 newsSchema.index({ originalUrl: 1 });
-
-// 3. Text search index for the RAG AI Chat (Feature 7 & 9)
-// This allows the backend to instantly search for keywords when a user asks a question
 newsSchema.index(
   { 
     title: 'text', 
@@ -52,6 +44,6 @@ newsSchema.index(
   }
 );
 
-export default mongoose.model('News', newsSchema);
-
-```
+// Explicitly define and export the model to prevent ESM import errors
+const News = mongoose.model('News', newsSchema);
+export default News;

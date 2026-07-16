@@ -1,4 +1,3 @@
-```javascript
 import Parser from 'rss-parser';
 import News from '../models/News.js';
 
@@ -34,7 +33,7 @@ const FEEDS = [
 export const fetchAndStoreNews = async () => {
   let newArticles = [];
 
-  console.log(`[RSS Service] Starting feed ingestion from ${FEEDS.length} sources...`);
+  console.log("[RSS Service] Starting feed ingestion from " + FEEDS.length + " sources...");
 
   for (const feed of FEEDS) {
     try {
@@ -43,7 +42,6 @@ export const fetchAndStoreNews = async () => {
       
       for (const item of parsedFeed.items) {
         // 1. Deduplication Check
-        // We use the article link as a unique identifier to ensure we don't save the same news twice
         const exists = await News.findOne({ originalUrl: item.link });
         
         if (!exists) {
@@ -52,9 +50,7 @@ export const fetchAndStoreNews = async () => {
             title: item.title,
             originalUrl: item.link,
             source: feed.source,
-            // Fallback to current date if pubDate is missing from the RSS feed
             publishDate: item.pubDate ? new Date(item.pubDate) : new Date(), 
-            // Some feeds use contentSnippet, some use content, some just have a title
             rawContent: item.contentSnippet || item.content || item.title
           });
           
@@ -63,12 +59,9 @@ export const fetchAndStoreNews = async () => {
         }
       }
     } catch (error) {
-      // If one feed fails (e.g., site is down), catch the error and continue to the next feed
-      console.error(`[RSS Error] Failed to fetch feed from ${feed.source}:`, error.message);
+      console.error("[RSS Error] Failed to fetch feed from " + feed.source + ":", error.message);
     }
   }
   
   return newArticles;
 };
-
-```

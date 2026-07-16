@@ -9,7 +9,7 @@
     "dev": "nodemon src/server.js"
   },
   "dependencies": {
-    "@google/genai": "latest",
+    "@google/generative-ai": "^0.21.0",
     "axios": "^1.6.5",
     "bullmq": "^5.0.0",
     "cors": "^2.8.5",

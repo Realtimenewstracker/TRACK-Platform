@@ -1,4 +1,3 @@
-```javascript
 import { Queue, Worker } from 'bullmq';
 import Redis from 'ioredis';
 import { fetchAndStoreNews } from '../services/rssService.js';
@@ -15,14 +14,14 @@ export const newsQueue = new Queue('news-ingestion', { connection });
 
 // 3. Define the Worker logic
 const newsWorker = new Worker('news-ingestion', async job => {
-  console.log(`[News Queue] Starting job ${job.id} - Fetching Latest News...`);
+  console.log("[News Queue] Starting job " + job.id + " - Fetching Latest News...");
   
   try {
     // A. Trigger the scraping service
     const newArticles = await fetchAndStoreNews();
     
     if (newArticles && newArticles.length > 0) {
-      console.log(`[News Queue] Successfully ingested ${newArticles.length} new articles.`);
+      console.log("[News Queue] Successfully ingested " + newArticles.length + " new articles.");
       
       const io = getIo();
       if (io) {
@@ -41,14 +40,14 @@ const newsWorker = new Worker('news-ingestion', async job => {
             delay: 5000 // Wait 5s, then 10s, then 20s if it keeps failing
           }
         });
-        console.log(`[News Queue] Pushed article ${article._id} to AI Queue.`);
+        console.log("[News Queue] Pushed article " + article._id + " to AI Queue.");
       }
     } else {
-      console.log(`[News Queue] No new articles found during this cycle.`);
+      console.log("[News Queue] No new articles found during this cycle.");
     }
 
   } catch (error) {
-    console.error(`[News Queue] Job ${job.id} failed:`, error.message);
+    console.error("[News Queue] Job " + job.id + " failed: ", error.message);
     throw error;
   }
 }, { 
@@ -58,7 +57,6 @@ const newsWorker = new Worker('news-ingestion', async job => {
 
 // Global error listener for the worker
 newsWorker.on('failed', (job, err) => {
-  console.error(`[News Queue - FATAL] Job ${job?.id} failed:`, err);
+  const jobId = job ? job.id : 'unknown';
+  console.error("[News Queue - FATAL] Job " + jobId + " failed: ", err);
 });
-
-```

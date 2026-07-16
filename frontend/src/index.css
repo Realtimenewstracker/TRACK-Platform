@@ -1,0 +1,47 @@
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    /* Ensures the deep space background is applied immediately to the entire window */
+    @apply bg-[#0B1220] text-white antialiased;
+  }
+}
+
+/* ==========================================================================
+   GLOBAL CUSTOM SCROLLBAR
+   Applies a sleek, semi-transparent scrollbar to all overflowing elements
+   ========================================================================== */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.5); /* Cyan neon glow on hover */
+}
+
+/* Utility class to completely hide the scrollbar visually, 
+  but still allow the user to scroll (used in horizontal lists)
+*/
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+```

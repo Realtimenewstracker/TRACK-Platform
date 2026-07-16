@@ -2,10 +2,10 @@
   "name": "track-backend",
   "version": "1.0.0",
   "description": "Backend engine for TRACK AI platform",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
   },
   "dependencies": {
     "@google/genai": "latest",

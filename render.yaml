@@ -1,0 +1,42 @@
+services:
+  # --- Backend: Node.js API + Queue Engine ---
+  - type: web
+    name: track-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false
+      - key: FETCH_INTERVAL_MS
+        value: "300000"
+      - key: GEMINI_RPM
+        value: "14"
+      - key: NODE_ENV
+        value: production
+
+  # --- Frontend: React/Vite Static Site ---
+  - type: web
+    name: track-frontend
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

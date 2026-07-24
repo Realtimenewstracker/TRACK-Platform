@@ -28,8 +28,15 @@ const newsWorker = new Worker('news-ingestion', async (job) => {
           'analyze-article',
           { articleId: article._id },
           {
-            attempts: 3,
-            backoff: { type: 'exponential', delay: 5000 }
+            attempts: 5,
+            // Exponential backoff starting at 65 s so Gemini's "retry in ~33s"
+            // window is always covered before the next attempt.
+            // Delays: 65s → 130s → 260s → 520s → 1040s
+            backoff: { type: 'exponential', delay: 65000 },
+            // Prevent Redis from accumulating thousands of stale jobs across
+            // restarts — all those jobs would re-flood the API on every deploy.
+            removeOnComplete: { count: 200 },
+            removeOnFail:     { count: 500 }
           }
         );
         console.log(`[News Queue] Pushed article ${article._id} to AI Queue.`);

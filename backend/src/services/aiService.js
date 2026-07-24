@@ -56,12 +56,14 @@ const responseSchema = {
 };
 
 // 3. Configure the Gemini Model
+// NOTE: gemini-2.0-flash requires a paid API plan (free-tier quota = 0).
+//       gemini-2.0-flash-lite is the free-tier equivalent (30 RPM / 1500 RPD).
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
+  model: "gemini-2.0-flash-lite",
   generationConfig: {
     responseMimeType: "application/json",
     responseSchema: responseSchema,
-    temperature: 0.1, 
+    temperature: 0.1,
   }
 });
 
@@ -93,3 +95,4 @@ export const analyzeNewsArticle = async (title, content) => {
     throw error;
   }
 };
+    

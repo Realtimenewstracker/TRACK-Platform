@@ -8,7 +8,9 @@ import { getIo } from '../server.js';
 // Create the AI Analysis Queue using shared connection
 export const aiQueue = new Queue('ai-analysis', { connection: redisConnection });
 
-// Worker: analyzes articles with Gemini, respects free-tier rate limit (14 RPM)
+// Worker: analyzes articles with Gemini.
+// Free-tier limit for gemini-2.0-flash-lite: 30 RPM / 1500 RPD.
+// We cap at 10 RPM (GEMINI_RPM env var) with concurrency=1 to stay well inside quota.
 const aiWorker = new Worker('ai-analysis', async (job) => {
   const { articleId } = job.data;
   console.log(`[AI Queue] Analyzing article: ${articleId}`);
@@ -50,14 +52,22 @@ const aiWorker = new Worker('ai-analysis', async (job) => {
       io.emit('news_analyzed', article);
     }
   } catch (error) {
-    console.error(`[AI Queue] Job ${job.id} failed for article ${articleId}:`, error.message);
-    throw error;
+    const is429 = error.message?.includes('429') || error.message?.includes('Too Many Requests');
+    if (is429) {
+      // Extract the suggested retry delay from the Gemini error body when available
+      const match = error.message.match(/retry in (\d+(?:\.\d+)?)s/i);
+      const suggestedDelay = match ? Math.ceil(parseFloat(match[1])) : 60;
+      console.warn(`[AI Queue] Rate-limited on article ${articleId}. Gemini says retry in ${suggestedDelay}s. BullMQ will handle backoff.`);
+    } else {
+      console.error(`[AI Queue] Job ${job.id} failed for article ${articleId}:`, error.message);
+    }
+    throw error; // always re-throw so BullMQ applies the backoff/retry policy
   }
 }, {
   connection: redisConnection,
-  concurrency: 2,
+  concurrency: 1, // one at a time — prevents burst spikes against the RPM cap
   limiter: {
-    max: parseInt(process.env.GEMINI_RPM) || 14,
+    max: parseInt(process.env.GEMINI_RPM) || 10, // 10 RPM; well below free-tier 30 RPM ceiling
     duration: 60 * 1000
   }
 });
@@ -65,3 +75,4 @@ const aiWorker = new Worker('ai-analysis', async (job) => {
 aiWorker.on('failed', (job, err) => {
   console.error(`[AI Queue — FATAL] Job ${job?.id ?? 'unknown'} failed after retries:`, err.message);
 });
+        
